@@ -41,10 +41,8 @@ function Explore() {
 
   const debouncedSearch = useDebounce(search, 500);
 
-  const {
-    isFavorite,
-    toggleFavorite,
-  } = useFavoritesContext();
+  const { isFavorite, toggleFavorite } =
+    useFavoritesContext();
 
   // --------------------------------------------------
   // Load categories and cuisines
@@ -61,10 +59,43 @@ function Explore() {
             getAreas(),
           ]);
 
-        setCategories(categoriesData || []);
-        setCuisines(cuisinesData || []);
+        // Remove duplicate categories
+        const uniqueCategories = Array.from(
+          new Map(
+            (categoriesData || [])
+              .map((item) => {
+                const name =
+                  item.strCategory || item.name;
+
+                return [name?.toLowerCase(), item];
+              })
+              .filter(([name]) => name)
+          ).values()
+        );
+
+        // Remove duplicate cuisines/areas
+        const uniqueCuisines = Array.from(
+          new Map(
+            (cuisinesData || [])
+              .map((item) => {
+                const name =
+                  item.strArea ||
+                  item.name ||
+                  item.area;
+
+                return [name?.toLowerCase(), item];
+              })
+              .filter(([name]) => name)
+          ).values()
+        );
+
+        setCategories(uniqueCategories);
+        setCuisines(uniqueCuisines);
       } catch (error) {
-        console.error("Failed to load filters:", error);
+        console.error(
+          "Failed to load filters:",
+          error
+        );
       } finally {
         setLoadingFilters(false);
       }
@@ -104,7 +135,7 @@ function Explore() {
       setRecipes([]);
 
       setError(
-        "Unable to load recipes. Please check your connection and try again.",
+        "Unable to load recipes. Please check your connection and try again."
       );
     } finally {
       setLoading(false);
@@ -120,14 +151,16 @@ function Explore() {
   // --------------------------------------------------
 
   const handleSearch = (value) => {
-    setSearch(value);
+    const searchValue = value.trim();
+
+    setSearch(searchValue);
     setCategory("");
     setCuisine("");
 
     const params = {};
 
-    if (value.trim()) {
-      params.search = value.trim();
+    if (searchValue) {
+      params.search = searchValue;
     }
 
     setSearchParams(params);
@@ -205,7 +238,6 @@ function Explore() {
           <div className="max-w-3xl">
             <div className="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-orange-500">
               <Search size={16} />
-
               Explore
             </div>
 
@@ -224,7 +256,8 @@ function Explore() {
           <div className="mt-8 max-w-3xl">
             <SearchBar
               value={search}
-              onSearch={handleSearch}
+              onChange={setSearch}
+              onSubmit={handleSearch}
               placeholder="Search recipes..."
             />
           </div>
@@ -245,7 +278,6 @@ function Explore() {
                 size={18}
                 className="text-orange-500"
               />
-
               Filters
             </div>
 
@@ -266,6 +298,10 @@ function Explore() {
                 {categories.map((item) => {
                   const name =
                     item.strCategory || item.name;
+
+                  if (!name) {
+                    return null;
+                  }
 
                   return (
                     <option
@@ -295,6 +331,10 @@ function Explore() {
                     item.strArea ||
                     item.name ||
                     item.area;
+
+                  if (!name) {
+                    return null;
+                  }
 
                   return (
                     <option
@@ -383,25 +423,29 @@ function Explore() {
 
           {/* Results */}
 
-          {!loading && !error && recipes.length > 0 && (
-            <RecipeGrid
-              recipes={recipes}
-              isFavorite={isFavorite}
-              onFavorite={toggleFavorite}
-            />
-          )}
+          {!loading &&
+            !error &&
+            recipes.length > 0 && (
+              <RecipeGrid
+                recipes={recipes}
+                isFavorite={isFavorite}
+                onFavorite={toggleFavorite}
+              />
+            )}
 
           {/* Empty */}
 
-          {!loading && !error && recipes.length === 0 && (
-            <EmptyState
-              icon={Search}
-              title="No recipes found"
-              message="Try another recipe name, category, or cuisine."
-              actionText="Clear Filters"
-              onAction={clearFilters}
-            />
-          )}
+          {!loading &&
+            !error &&
+            recipes.length === 0 && (
+              <EmptyState
+                icon={Search}
+                title="No recipes found"
+                message="Try another recipe name, category, or cuisine."
+                actionText="Clear Filters"
+                onAction={clearFilters}
+              />
+            )}
         </div>
       </section>
     </main>
