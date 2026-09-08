@@ -12,7 +12,7 @@ import { Link, useNavigate } from "react-router-dom";
 import RecipeGrid from "../components/recipe/RecipeGrid";
 import EmptyState from "../components/ui/EmptyState";
 
-import { useHistory } from "../hooks/useHistory";
+import useHistory from "../hooks/useHistory";
 
 function History() {
   const navigate = useNavigate();

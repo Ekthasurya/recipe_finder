@@ -286,3 +286,11 @@ export const getFormattedRandomRecipe = async () => {
 
   return formatRecipe(recipe);
 };
+
+
+/**
+ * Get popular recipes
+ */
+export const getPopularRecipes = async (count = 6) => {
+  return getRandomRecipes(count);
+};

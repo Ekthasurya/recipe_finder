@@ -13,7 +13,7 @@ function CuisineGrid({
       <div className="grid gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         {Array.from({ length: 10 }).map((_, index) => (
           <div
-            key={index}
+            key={`skeleton-${index}`}
             className="rounded-2xl border border-orange-100 bg-white p-1"
           >
             <div className="rounded-xl bg-orange-50 p-6">
@@ -48,9 +48,34 @@ function CuisineGrid({
     );
   }
 
+  // Remove duplicate cuisines
+  const uniqueCuisines = cuisines.filter(
+    (cuisine, index, self) => {
+      const cuisineName =
+        cuisine.strArea ||
+        cuisine.name ||
+        cuisine.area;
+
+      return (
+        cuisineName &&
+        self.findIndex((item) => {
+          const itemName =
+            item.strArea ||
+            item.name ||
+            item.area;
+
+          return (
+            itemName?.toLowerCase() ===
+            cuisineName.toLowerCase()
+          );
+        }) === index
+      );
+    },
+  );
+
   return (
     <div className="grid gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-      {cuisines.map((cuisine, index) => {
+      {uniqueCuisines.map((cuisine) => {
         const cuisineName =
           cuisine.strArea ||
           cuisine.name ||
@@ -58,7 +83,7 @@ function CuisineGrid({
 
         return (
           <CuisineCard
-            key={`${cuisineName}-${index}`}
+            key={cuisineName}
             cuisine={cuisine}
           />
         );
